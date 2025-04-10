@@ -2,7 +2,8 @@ from django.db import transaction
 from rest_framework import serializers
 
 from cinema.models import (
-    Genre, Actor,
+    Genre,
+    Actor,
     CinemaHall,
     Movie,
     MovieSession,
@@ -37,7 +38,9 @@ class MovieSerializer(serializers.ModelSerializer):
 
 class MovieListSerializer(MovieSerializer):
     genres = serializers.SlugRelatedField(
-        many=True, read_only=True, slug_field="name"
+        many=True,
+        read_only=True,
+        slug_field="name"
     )
     actors = serializers.SlugRelatedField(
         many=True, read_only=True, slug_field="full_name"
@@ -62,7 +65,8 @@ class MovieSessionSerializer(serializers.ModelSerializer):
 class MovieSessionListSerializer(MovieSessionSerializer):
     movie_title = serializers.CharField(source="movie.title", read_only=True)
     cinema_hall_name = serializers.CharField(
-        source="cinema_hall.name", read_only=True
+        source="cinema_hall.name",
+        read_only=True
     )
     cinema_hall_capacity = serializers.IntegerField(
         source="cinema_hall.capacity", read_only=True
@@ -84,7 +88,7 @@ class MovieSessionListSerializer(MovieSessionSerializer):
 class TicketSeatRowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ("row","seat")
+        fields = ("row", "seat")
 
 
 class MovieSessionDetailSerializer(MovieSessionSerializer):
@@ -112,7 +116,12 @@ class TicketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ['id', 'movie_session', 'row', 'seat']
+        fields = [
+            "id",
+            "movie_session",
+            "row",
+            "seat"
+        ]
 
     def validate(self, data):
         data = super(TicketSerializer, self).validate(data)
@@ -131,7 +140,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'created_at', 'user', 'tickets']
+        fields = [
+            "id",
+            "created_at",
+            "user",
+            "tickets"
+        ]
 
     def create(self, validated_data):
         with transaction.atomic():
