@@ -84,6 +84,19 @@ class Ticket(models.Model):
     row = models.IntegerField()
     seat = models.IntegerField()
 
+    class Meta:
+        unique_together = ("row", "seat")
+
+    @staticmethod
+    def validate_seat(seat: int, row: int, error_to_raise):
+        if not (1 <= row <= seat):
+            raise error_to_raise(
+                {
+                    "seat": f"seat must be in range [1, {seat}], not {row}"
+                }
+            )
+
+
     def clean(self):
         for ticket_attr_value, ticket_attr_name, cinema_hall_attr_name in [
             (self.row, "row", "rows"),
