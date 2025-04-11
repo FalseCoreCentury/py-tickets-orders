@@ -115,19 +115,15 @@ class MovieSessionDetailSerializer(MovieSessionSerializer):
         fields = ("id", "show_time", "movie", "cinema_hall", "taken_places")
 
     def validate(self, data):
-        request_data = self.context["request"].data
-        movie_session_id = request_data.get("movie_session")
+        max_row = self.context['request'].data.get('movie_session', {}).get('cinema_hall', {}).get('rows')
+        max_seat = self.context['request'].data.get('movie_session', {}).get('cinema_hall', {}).get('seats_in_row')
 
-        try:
-            movie_session = MovieSession.objects.select_related(
-                "cinema_hall"
-            ).get(
-                id=movie_session_id
-            )
-        except MovieSession.DoesNotExist:
-            raise serializers.ValidationError(
-                {"movie_session": "Invalid movie_session ID"}
-            )
+        if max_row is None or max_seat is None:
+            raise serializers.ValidationError("Invalid cinema hall data.")
+
+        self.validate_row_seat(data["row"], "row", max_row)
+        self.validate_row_seat(data["seat"], "seat", max_seat)
+        return data
 
         max_row = movie_session.cinema_hall.rows
         max_seat = movie_session.cinema_hall.seats_in_row
