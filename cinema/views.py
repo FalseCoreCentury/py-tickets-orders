@@ -3,14 +3,15 @@ from datetime import datetime
 from django.db.models import Count, F
 from rest_framework import viewsets
 
-from cinema.models import (Genre,
-                           Actor,
-                           CinemaHall,
-                           Movie,
-                           MovieSession,
-                           Ticket,
-                           Order
-                           )
+from cinema.models import (
+    Genre,
+    Actor,
+    CinemaHall,
+    Movie,
+    MovieSession,
+    Ticket,
+    Order
+)
 
 from rest_framework.pagination import PageNumberPagination
 from cinema.serializers import (
@@ -25,7 +26,7 @@ from cinema.serializers import (
     MovieListSerializer,
     TicketSerializer,
     OrderSerializer,
-    OrderListSerializer
+    OrderListSerializer,
 )
 
 
