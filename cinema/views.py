@@ -60,26 +60,28 @@ class MovieViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
 
-        if self.action == "list":
-            queryset = (
-                queryset.annotate(
-                    tickets_available=F(
-                        "cinema_hall__rows"
-                    ) * F(
-                        "cinema_hall__seats_in_row"
-                    ) - Count("tickets")))
+        title = self.request.query_params.get("title")
+        actor_ids = self.request.query_params.get("actors")
+        genre_ids = self.request.query_params.get("genres")
 
-            movie = self.request.query_params.get("movie", None)
-            date = self.request.query_params.get("date", None)
+        if title:
+            queryset = queryset.filter(title__icontains=title)
 
-            if movie:
-                queryset = queryset.filter(movie_id=int(movie))
+        if actor_ids:
+            try:
+                actor_id_list = [int(i) for i in actor_ids.split(",")]
+                queryset = queryset.filter(actors__id__in=actor_id_list)
+            except ValueError:
+                pass
 
-            if date:
-                date = datetime.strptime(date, "%Y-%m-%d").date()
-                queryset = queryset.filter(show_time__startswith=date)
+        if genre_ids:
+            try:
+                genre_id_list = [int(i) for i in genre_ids.split(",")]
+                queryset = queryset.filter(genres__id__in=genre_id_list)
+            except ValueError:
+                pass
 
-        return queryset
+        return queryset.distinct()
 
 
 class MovieSessionViewSet(viewsets.ModelViewSet):
