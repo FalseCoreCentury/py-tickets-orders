@@ -119,9 +119,15 @@ class MovieSessionDetailSerializer(MovieSessionSerializer):
         movie_session_id = request_data.get("movie_session")
 
         try:
-            movie_session = MovieSession.objects.select_related("cinema_hall").get(id=movie_session_id)
+            movie_session = MovieSession.objects.select_related(
+                "cinema_hall"
+            ).get(
+                id=movie_session_id
+            )
         except MovieSession.DoesNotExist:
-            raise serializers.ValidationError({"movie_session": "Invalid movie_session ID"})
+            raise serializers.ValidationError(
+                {"movie_session": "Invalid movie_session ID"}
+            )
 
         max_row = movie_session.cinema_hall.rows
         max_seat = movie_session.cinema_hall.seats_in_row
@@ -146,13 +152,12 @@ class OrderSerializer(serializers.ModelSerializer):
             attr_max_value: int
     ) -> None:
         if not (1 <= attr_value <= attr_max_value):
-            raise serializers.ValidationError(
-                {
-                    attr_name: f"{attr_name} "
-                               f"number must be in available range: "
-                               f"(1, {attr_max_value})"
-                }
-            )
+            raise serializers.ValidationError({
+                attr_name: (
+                    f"{attr_name} number must be in available range: "
+                    f"(1, {attr_max_value})"
+                )
+            })
 
     def create(self, validated_data):
         with transaction.atomic():
