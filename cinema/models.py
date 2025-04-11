@@ -91,10 +91,10 @@ class Ticket(models.Model):
         unique_together = ("row", "seat")
 
     @staticmethod
-    def validate_seat(seat: int, row: int, error_to_raise):
-        if not (1 <= row <= seat):
+    def validate_seat(seat: int, max_seats: int, error_to_raise):
+        if not (1 <= seat <= max_seats):
             raise error_to_raise(
-                {"seat": f"seat must be in range [1, {seat}], not {row}"}
+                {"seat": f"seat must be in range [1, {max_seats}], not {seat}"}
             )
 
     def clean(self):

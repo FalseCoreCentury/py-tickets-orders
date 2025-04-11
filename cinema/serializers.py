@@ -90,21 +90,6 @@ class TicketSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = ("id", "row", "seat", "movie_session")
 
-    @staticmethod
-    def validate_row_seat(
-            attr_value: int,
-            attr_name: str,
-            attr_max_value: int
-    ) -> None:
-        if not (1 <= attr_value <= attr_max_value):
-            raise serializers.ValidationError(
-                {
-                    attr_name: f"{attr_name} "
-                    f"number must be in available range: "
-                    f"(1, {attr_max_value})"
-                }
-            )
-
 
 class TicketListSerializer(TicketSerializer):
     movie_session = MovieSessionListSerializer(many=False, read_only=True)
@@ -130,10 +115,20 @@ class MovieSessionDetailSerializer(MovieSessionSerializer):
         fields = ("id", "show_time", "movie", "cinema_hall", "taken_places")
 
     def validate(self, data):
-        max_row = data["movie_session"].cinema_hall.rows
-        max_seat = data["movie_session"].cinema_hall.seats_in_row
+        request_data = self.context["request"].data
+        movie_session_id = request_data.get("movie_session")
+
+        try:
+            movie_session = MovieSession.objects.select_related("cinema_hall").get(id=movie_session_id)
+        except MovieSession.DoesNotExist:
+            raise serializers.ValidationError({"movie_session": "Invalid movie_session ID"})
+
+        max_row = movie_session.cinema_hall.rows
+        max_seat = movie_session.cinema_hall.seats_in_row
+
         self.validate_row_seat(data["row"], "row", max_row)
         self.validate_row_seat(data["seat"], "seat", max_seat)
+
         return data
 
 
@@ -143,6 +138,21 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ("id", "tickets", "created_at")
+
+    @staticmethod
+    def validate_row_seat(
+            attr_value: int,
+            attr_name: str,
+            attr_max_value: int
+    ) -> None:
+        if not (1 <= attr_value <= attr_max_value):
+            raise serializers.ValidationError(
+                {
+                    attr_name: f"{attr_name} "
+                               f"number must be in available range: "
+                               f"(1, {attr_max_value})"
+                }
+            )
 
     def create(self, validated_data):
         with transaction.atomic():
